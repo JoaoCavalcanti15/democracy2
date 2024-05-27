@@ -53,5 +53,13 @@ public class CitizenController {
         return ResponseEntity.ok(chosenCitizen);
     }
 
+    @PostMapping("/{citizenId}/vote")
+    public ResponseEntity<Citizen> voteInProposal(@PathVariable Long citizenId,
+                                                  @RequestParam Long voteId,
+                                                  @RequestParam boolean inFavor) {
+        Citizen updatedCitizen = citizenService.voteInProposal(citizenId, voteId, inFavor);
+        return ResponseEntity.ok(updatedCitizen);
+    }
+
     
 }
