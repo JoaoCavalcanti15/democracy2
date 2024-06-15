@@ -31,14 +31,14 @@ public class Proposal {
     public Proposal() {
     }
 
-    public Proposal(String title, String description, String pdfAttachment, Theme theme, LocalDateTime validity, Delegate delegateProponent, boolean closed) {
+    public Proposal(String title, String description, String pdfAttachment, Theme theme, LocalDateTime validity, Delegate delegateProponent) {
         this.title = title;
         this.description = description;
         this.pdfAttachment = pdfAttachment;
         this.theme = theme;
         this.validity = validity;
         this.delegateProponent = delegateProponent;
-        this.closed = closed;
+        this.closed = false;
         this.supportCount = 0;
     }
 

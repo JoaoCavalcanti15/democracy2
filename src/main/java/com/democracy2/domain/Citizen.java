@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Citizen {
 
     @Id
@@ -17,15 +18,15 @@ public class Citizen {
     private String name;
     
     @Column(unique = true)
-    private String citizenCardNumber;
+    protected String citizenCardNumber;
 
     @Column(unique = true)
-    private String authToken;
+    protected String authToken;
 
-    @OneToMany(mappedBy = "supporter", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "delegateProponent", cascade = CascadeType.ALL)
     private List<Proposal> supportedProposals;
 
-    @OneToMany(mappedBy = "citizen", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL)
     private List<Vote> votes;
 
     @ElementCollection

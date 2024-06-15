@@ -31,7 +31,7 @@ public class ProposalController {
         Delegate delegateProponent = delegateService.findById(delegateId);
         
         // Present the bill
-        Proposal presentedProposal = proposalService.presentBill(proposal, delegateProponent);
+        Proposal presentedProposal = proposalService.presentBill(proposal.getId(), delegateProponent.getId());
         
         return ResponseEntity.ok(presentedProposal);
     }

@@ -11,7 +11,7 @@ public class Vote {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "proposal_id")
+    @JoinColumn(name = "delegateProponent")
     private Proposal proposal;
 
     private int votesInFavor;

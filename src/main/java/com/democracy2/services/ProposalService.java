@@ -3,36 +3,66 @@ package com.democracy2.services;
 import com.democracy2.domain.Citizen;
 import com.democracy2.domain.Delegate;
 import com.democracy2.domain.Proposal;
+import com.democracy2.domain.Theme;
 import com.democracy2.domain.Vote;
 import com.democracy2.repositories.CitizenRepository;
 import com.democracy2.repositories.ProposalRepository;
 import com.democracy2.repositories.VoteRepository;
+import com.democracy2.repositories.DelegateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional
 public class ProposalService {
 
     private final ProposalRepository proposalRepository;
     private final VoteRepository voteRepository;
     private final CitizenRepository citizenRepository;
+    private final DelegateRepository delegateRepository;
 
     @Autowired
     public ProposalService(ProposalRepository proposalRepository, 
                            VoteRepository voteRepository, 
-                           CitizenRepository citizenRepository) {
+                           CitizenRepository citizenRepository,
+                           DelegateRepository delegateRepository) {
         this.proposalRepository = proposalRepository;
         this.voteRepository = voteRepository;
         this.citizenRepository = citizenRepository;
+        this.delegateRepository = delegateRepository;
+        
     }
 
-    public Proposal presentBill(Proposal proposal, Delegate delegateProponent) {
+    public Proposal presentBill(String title, String description, String pdfAttachment, Theme theme, LocalDateTime validity, Long delegateProponentId) {
+        Delegate delegateProponent = delegateRepository.findById(delegateProponentId)
+            .orElseThrow(() -> new IllegalArgumentException("Delegate not found"));
+
+        Proposal proposal = new Proposal(title, description, pdfAttachment, theme, validity, delegateProponent);
+        proposalRepository.save(proposal);
+        
+        delegateProponent.getProposals().add(proposal);
+        delegateRepository.save(delegateProponent);
+        
+        return proposalRepository.save(proposal);
+    }
+    
+    public Proposal presentBill(Long proposalId, Long delegateProponentId) {
+        Proposal proposal = proposalRepository.findById(proposalId)
+            .orElseThrow(() -> new IllegalArgumentException("Proposal not found"));
+
+        Delegate delegateProponent = delegateRepository.findById(delegateProponentId)
+            .orElseThrow(() -> new IllegalArgumentException("Delegate not found"));
+
         proposal.setDelegateProponent(delegateProponent);
         proposal.setClosed(false);
         proposal.setSupportCount(0);
+
+        delegateProponent.getProposals().add(proposal);
+        delegateRepository.save(delegateProponent);
         return proposalRepository.save(proposal);
     }
 
@@ -43,19 +73,20 @@ public class ProposalService {
         Citizen citizen = citizenRepository.findById(citizenId)
             .orElseThrow(() -> new IllegalArgumentException("Citizen not found"));
 
-        // Check if the citizen has already supported the proposal
+        // Ensure the proposal isn't already supported
         if (citizen.getSupportedProposals().contains(proposal)) {
             throw new IllegalArgumentException("Citizen has already supported this proposal");
         }
 
-        // Add the proposal to the citizen's list of supported proposals
+        // Add support
         citizen.getSupportedProposals().add(proposal);
-
         proposal.incrementSupportCount();
         if (proposal.getSupportCount() >= 10000) {
             openVoting(proposal);
         }
 
+        // Save changes
+        citizenRepository.save(citizen);
         return proposalRepository.save(proposal);
     }
 

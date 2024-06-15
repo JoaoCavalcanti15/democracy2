@@ -4,11 +4,13 @@ import com.democracy2.domain.Vote;
 import com.democracy2.repositories.VoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional
 public class VoteService {
 
     private final VoteRepository voteRepository;
