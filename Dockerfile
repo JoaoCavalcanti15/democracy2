@@ -1,14 +1,26 @@
-FROM docker.io/maven:3-eclipse-temurin-17 as builder
-ADD pom.xml .
+# Use a base image that has Maven and JDK
+FROM maven:3-openjdk-11 AS builder
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the pom.xml file to leverage Docker layer caching
+COPY pom.xml .
+
+# Download dependencies if any changes in the pom.xml
 RUN mvn dependency:go-offline
-COPY . .
+
+# Copy the rest of the application source
+COPY src/ src/
+
+# Compile your application and tests
 RUN mvn clean package
 
-FROM docker.io/eclipse-temurin:17
-VOLUME /tmp
-EXPOSE 8082
-RUN mkdir -p /app/
-RUN mkdir -p /app/logs/
-COPY --from=builder target/demo-0.0.2-SNAPSHOT.jar /app/app.jar
-EXPOSE 8080
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-Dspring.profiles.active=container", "-jar", "/app/app.jar"]
+# Copy the test.sh script into the container
+COPY test.sh /app/test.sh
+
+# Make test.sh executable
+RUN chmod +x /app/test.sh
+
+# Command to run the test.sh script
+CMD ["bash", "-c", "/app/test.sh"]
